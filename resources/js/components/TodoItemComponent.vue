@@ -30,24 +30,7 @@
                     Save
                 </button>
 
-                <a href="#myModal" data-toggle="modal"><button class="btn btn-danger m-1 p-0 px-2">Delete</button></a>
-                <div id="myModal" class="modal fade">
-                    <div class="modal-dialog modal-confirm">
-                        <div class="modal-content">
-                            <div class="modal-header flex-column">
-                                <h4 class="modal-title w-100">Are you sure?</h4>
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Do you really want to delete these records? This process cannot be undone.</p>
-                            </div>
-                            <div class="modal-footer justify-content-center">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-danger" data-dismiss="modal" v-on:click="deleteTodo">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <a data-toggle="modal"><button class="btn btn-danger m-1 p-0 px-2" v-on:click="deleteTodo">Delete</button></a>
             </div>
         </div>
     </div>
@@ -75,12 +58,12 @@
             axios.get('/categories/'+this.todo.category_id).then((response) => {
                 this.category = response.data.name;
             });
-            console.log(this.form.name, this.form.status)
         },
 
         methods: {
             updateTodo() {
                 this.editable = !this.editable;
+                console.log(this.todo.id);
                 const params = {name: this.form.name, status: this.form.status};
                 axios.put('/tasks/'+this.todo.id, params).then((response) =>{
                     this.$emit('update', response.data);
@@ -96,8 +79,6 @@
             },
 
             checkTask() {
-                console.log(this.form.status)
-
                 const params = {name: this.form.name, status: this.form.status};
                 axios.put('/tasks/'+this.todo.id, params).then((response) =>{
                     this.$emit('update', response.data);

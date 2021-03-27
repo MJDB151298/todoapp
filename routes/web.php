@@ -27,8 +27,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 //Routes for categories
 Route::apiResource('/tasks', \App\Http\Controllers\TaskController::class);
-Route::get('/tasks/filter/{category_id}/{sort}', [\App\Http\Controllers\TaskController::class, 'showByFilters']);
-Route::get('/tasks/indexSorted/{sort}', [\App\Http\Controllers\TaskController::class, 'indexSorted']);
+Route::get('/tasks/filter/{category_id}', [\App\Http\Controllers\TaskController::class, 'showByFilters']);
 
 
 Route::apiResource('/categories', \App\Http\Controllers\CategoryController::class);

@@ -2010,19 +2010,16 @@ __webpack_require__.r(__webpack_exports__);
   name: "HomeComponent",
   data: function data() {
     return {
-      todos: []
+      todos: [],
+      sorting: 'desc'
     };
   },
   mounted: function mounted() {
-    var _this = this;
-
-    axios.get('/tasks').then(function (response) {
-      _this.todos = response.data;
-    });
+    this.fetchTodo();
   },
   methods: {
     createTodo: function createTodo(task) {
-      this.todos.push(task);
+      if (this.sorting === 'desc') this.todos.unshift(task);else this.todos.push(task);
     },
     updateTodo: function updateTodo(index, task) {
       this.todos[index] = task;
@@ -2033,6 +2030,27 @@ __webpack_require__.r(__webpack_exports__);
     filterTodo: function filterTodo(tasks) {
       this.todos.splice(0, this.todos.length);
       this.todos = tasks;
+      this.sortTodo();
+    },
+    sortTodo: function sortTodo(sorting) {
+      if (sorting === 'asc') {
+        this.todos.reverse();
+      } else if (sorting === 'desc') {
+        this.todos.sort();
+        this.todos.reverse();
+      }
+
+      this.sorting = sorting;
+    },
+    fetchTodo: function fetchTodo() {
+      var _this = this;
+
+      axios.get('/tasks').then(function (response) {
+        _this.todos = response.data;
+        console.log(_this.todos);
+
+        _this.sortTodo(_this.sorting);
+      });
     }
   }
 });
@@ -2083,6 +2101,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "OptionsComponent",
   data: function data() {
@@ -2090,7 +2110,7 @@ __webpack_require__.r(__webpack_exports__);
       filters: {
         category: "All",
         status: "all",
-        sort: 'added-date-asc'
+        sort: 'added-date-desc'
       }
     };
   },
@@ -2098,27 +2118,20 @@ __webpack_require__.r(__webpack_exports__);
     onChange: function onChange(event) {
       var _this = this;
 
-      var sorting = this.filters.sort === 'added-date-asc' ? 'asc' : 'desc';
-
       if (this.filters.category === "All") {
-        axios.get('/tasks/indexSorted/' + sorting).then(function (response) {
-          console.log("hola");
-          console.log(response.data);
-
-          _this.$emit('search', response.data);
-        });
+        this.$emit('fetch');
       } else {
-        //let status = this.filters.status === "completed" ? 1 : 0;
-        //if(this.filters.status === "all")
-        //  status = "all";
         axios.get('/categories/name/' + this.filters.category).then(function (response) {
-          var request = '/tasks/filter/' + 0 + "/" + sorting;
-          if (response.data.length > 0) request = '/tasks/filter/' + response.data[0].id + "/" + sorting;
+          var request = '/tasks/filter/' + response.data[0].id;
           axios.get(request).then(function (response) {
             _this.$emit('search', response.data);
           });
         });
       }
+    },
+    onChangeSort: function onChangeSort() {
+      var sorting = this.filters.sort === 'added-date-desc' ? 'desc' : 'asc';
+      this.$emit("sort", sorting);
     }
   }
 });
@@ -2138,23 +2151,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var vue_material_checkbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-material-checkbox */ "./node_modules/vue-material-checkbox/dist/vue-material-checkbox.js");
 /* harmony import */ var vue_material_checkbox__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue_material_checkbox__WEBPACK_IMPORTED_MODULE_0__);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -2216,13 +2212,13 @@ __webpack_require__.r(__webpack_exports__);
     axios.get('/categories/' + this.todo.category_id).then(function (response) {
       _this.category = response.data.name;
     });
-    console.log(this.form.name, this.form.status);
   },
   methods: {
     updateTodo: function updateTodo() {
       var _this2 = this;
 
       this.editable = !this.editable;
+      console.log(this.todo.id);
       var params = {
         name: this.form.name,
         status: this.form.status
@@ -2243,7 +2239,6 @@ __webpack_require__.r(__webpack_exports__);
     checkTask: function checkTask() {
       var _this4 = this;
 
-      console.log(this.form.status);
       var params = {
         name: this.form.name,
         status: this.form.status
@@ -38552,7 +38547,9 @@ var render = function() {
       _vm._v(" "),
       _c("div", { staticClass: "p-2 mx-4 border-black-25 border-bottom" }),
       _vm._v(" "),
-      _c("options-component", { on: { search: _vm.filterTodo } }),
+      _c("options-component", {
+        on: { search: _vm.filterTodo, fetch: _vm.fetchTodo, sort: _vm.sortTodo }
+      }),
       _vm._v(" "),
       _c("todolist-component", {
         attrs: { todos: _vm.todos },
@@ -38672,16 +38669,16 @@ var render = function() {
                   $event.target.multiple ? $$selectedVal : $$selectedVal[0]
                 )
               },
-              _vm.onChange
+              _vm.onChangeSort
             ]
           }
         },
         [
-          _c("option", { attrs: { value: "added-date-asc", selected: "" } }, [
+          _c("option", { attrs: { value: "added-date-desc", selected: "" } }, [
             _vm._v("Added date - desc")
           ]),
           _vm._v(" "),
-          _c("option", { attrs: { value: "due-date-desc" } }, [
+          _c("option", { attrs: { value: "due-date-asc" } }, [
             _vm._v("Added date - asc")
           ])
         ]
@@ -38852,41 +38849,15 @@ var render = function() {
                 )
               : _vm._e(),
             _vm._v(" "),
-            _vm._m(0),
-            _vm._v(" "),
-            _c("div", { staticClass: "modal fade", attrs: { id: "myModal" } }, [
-              _c("div", { staticClass: "modal-dialog modal-confirm" }, [
-                _c("div", { staticClass: "modal-content" }, [
-                  _vm._m(1),
-                  _vm._v(" "),
-                  _vm._m(2),
-                  _vm._v(" "),
-                  _c(
-                    "div",
-                    { staticClass: "modal-footer justify-content-center" },
-                    [
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-secondary",
-                          attrs: { type: "button", "data-dismiss": "modal" }
-                        },
-                        [_vm._v("Cancel")]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-danger",
-                          attrs: { type: "button", "data-dismiss": "modal" },
-                          on: { click: _vm.deleteTodo }
-                        },
-                        [_vm._v("Delete")]
-                      )
-                    ]
-                  )
-                ])
-              ])
+            _c("a", { attrs: { "data-toggle": "modal" } }, [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-danger m-1 p-0 px-2",
+                  on: { click: _vm.deleteTodo }
+                },
+                [_vm._v("Delete")]
+              )
             ])
           ]
         )
@@ -38894,51 +38865,7 @@ var render = function() {
     ]
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("a", { attrs: { href: "#myModal", "data-toggle": "modal" } }, [
-      _c("button", { staticClass: "btn btn-danger m-1 p-0 px-2" }, [
-        _vm._v("Delete")
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "modal-header flex-column" }, [
-      _c("h4", { staticClass: "modal-title w-100" }, [_vm._v("Are you sure?")]),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          staticClass: "close",
-          attrs: {
-            type: "button",
-            "data-dismiss": "modal",
-            "aria-hidden": "true"
-          }
-        },
-        [_vm._v("×")]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "modal-body" }, [
-      _c("p", [
-        _vm._v(
-          "Do you really want to delete these records? This process cannot be undone."
-        )
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 

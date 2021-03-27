@@ -101,43 +101,13 @@ class TaskController extends Controller
     }
 
     /**
-     * @param $status
      * @param $category_id
-     * @param $sort
      * @return mixed
      */
-
-    public function showByFilters($category_id, $sort){
-       /** if ($status == 'all'){
-            return Task::select('*')
-                ->where('category_id', $category_id)
-                ->orderBy('created_at', $sort)
-                ->get();
-        }
-
-        elseif ($category_id == 0) {
-            Task::select('*')
-                ->where('status', $status)
-                ->orderBy('created_at', $sort)
-                ->get();
-        }**/
-
+    public function showByFilters($category_id){
         return Task::select('*')
             ->where('category_id', $category_id)
-            ->orderBy('created_at', $sort)
             ->get();
-
-    }
-
-    public function indexSorted($sort){
-        return $sort == 'asc' ?
-            Task::where('user_id', auth()->id())
-                ->latest()
-                ->get()
-            :
-            Task::where('user_id', auth()->id())
-                ->oldest()
-                ->get();
     }
 
 }

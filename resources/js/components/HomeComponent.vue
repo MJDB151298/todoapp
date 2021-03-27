@@ -6,7 +6,7 @@
         <createitem-component @new="createTodo"></createitem-component>
         <div class="p-2 mx-4 border-black-25 border-bottom"></div>
         <!-- View options section -->
-        <options-component @search="filterTodo"></options-component>
+        <options-component @search="filterTodo" @fetch="fetchTodo" @sort="sortTodo"></options-component>
         <!-- Todo list section -->
         <todolist-component :todos="todos" @update="updateTodo" @delete="deleteTodo"></todolist-component>
     </div>
@@ -18,18 +18,20 @@
         data() {
             return {
                 todos: [],
+                sorting: 'desc'
             }
         },
 
         mounted() {
-            axios.get('/tasks').then((response) => {
-                this.todos = response.data;
-            });
+            this.fetchTodo();
         },
 
         methods: {
             createTodo(task){
-                this.todos.push(task);
+                if(this.sorting === 'desc')
+                    this.todos.unshift(task)
+                else
+                    this.todos.push(task)
             },
 
             updateTodo(index, task){
@@ -43,6 +45,26 @@
             filterTodo(tasks){
                 this.todos.splice(0,this.todos.length);
                 this.todos = tasks;
+                this.sortTodo();
+            },
+
+            sortTodo(sorting){
+                if(sorting === 'asc'){
+                    this.todos.reverse();
+                }
+                else if(sorting === 'desc') {
+                    this.todos.sort();
+                    this.todos.reverse();
+                }
+                this.sorting = sorting;
+            },
+
+            fetchTodo(){
+                axios.get('/tasks').then((response) => {
+                    this.todos = response.data;
+                    console.log(this.todos);
+                    this.sortTodo(this.sorting);
+                });
             }
         }
     }
